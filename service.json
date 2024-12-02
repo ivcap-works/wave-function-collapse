@@ -1,0 +1,48 @@
+{
+  "$schema": "urn:ivcap:schema.service.2",
+  "$id": "#SERVICE_URN#",
+  "name": "Railroad Tracks via Wave Function Collapse algorithm",
+  "description": "This service generates a simple railroad track map using the _Wave Function Collapse_ algorithm as described by [Oskar Stålberg](https://www.youtube.com/watch?v=0bcZb-SsnrA&t=350s).",
+  "policy": "urn:ivcap:policy:ivcap.base.service",
+  "controller_schema": "urn:ivcap:schema.service.rest.1",
+  "controller": {
+    "$schema": "urn:ivcap:schema.service.rest.1",
+    "package_urn": "#PACKAGE_URN#",
+    "command": [
+      "/app/main --port 8080"
+    ],
+    "port": 8080,
+    "ready_path": "/_healtz",
+    "request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:sd.test:schema.railroad-collapse.request.1",
+      "properties": {
+        "width": {
+          "default": 8,
+          "description": "Number of tiles in x direction",
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "default": 8,
+          "description": "Number of tiles in y direction",
+          "title": "Height",
+          "type": "number"
+        },
+        "attempts": {
+          "default": 400,
+          "description": "Number of attempts to find a solution",
+          "title": "Attempts",
+          "type": "number"
+        }
+      },
+      "required": [],
+      "title": "Request",
+      "type": "object"
+    },
+    "response": {
+      "$schema": "urn:ivcap:schema:binary-response",
+      "content-type": "image/png"
+    }
+  }
+}
