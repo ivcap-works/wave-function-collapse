@@ -2,8 +2,9 @@ SERVICE_NAME=railroad-wave-collapse
 SERVICE_TITLE=Railroad Tracks via Wave Function Collapse algorithm
 
 SERVICE_FILE=service.py
-SERVICE_ID:=urn:ivcap:service:$(shell python3 -c 'import uuid; print(uuid.uuid5(uuid.NAMESPACE_DNS, \
+SERVICE_ID:=$(shell python3 -c 'import uuid; print(uuid.uuid5(uuid.NAMESPACE_DNS, \
         "${PROVIDER_NAME}" + "${SERVICE_CONTAINER_NAME}"));')
+SERVICE_URN:=urn:ivcap:service:${SERVICE_ID}
 
 GIT_COMMIT := $(shell git rev-parse --short HEAD)
 GIT_TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
@@ -35,6 +36,16 @@ send-request:
 		-d @sample_request.json \
 		--output ./output/$(shell date -Iseconds).png \
 		http://localhost:${PORT}
+
+send-ivcap-request:
+	mkdir -p ./output
+	curl -X POST \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(shell ivcap context get access-token)" \
+		-d @sample_request.json \
+		-i \
+		http://localhost:8088/1/services/${SERVICE_ID}/jobs
+
 
 docker-build:
 	@echo "Building docker image ${DOCKER_NAME}"
@@ -103,5 +114,5 @@ service-register: # docker-publish
 	$(eval image:=$(shell ivcap package list ${DOCKER_TAG}))
 	cat ${PROJECT_DIR}/service.json \
 	| sed 's|#PACKAGE_URN#|${image}|' \
-	| sed 's|#SERVICE_URN#|${SERVICE_ID}|' \
-	| ivcap aspect update ${SERVICE_ID} -f - --timeout 600
+	| sed 's|#SERVICE_URN#|${SERVICE_URN}|' \
+	| ivcap aspect update ${SERVICE_URN} -f - --timeout 600
