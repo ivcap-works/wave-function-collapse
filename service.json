@@ -9,7 +9,9 @@
     "$schema": "urn:ivcap:schema.service.rest.1",
     "package_urn": "#PACKAGE_URN#",
     "command": [
-      "/app/main --port 8080"
+      "/app/main",
+      "--port",
+      "8080"
     ],
     "port": 8080,
     "ready_path": "/_healtz",

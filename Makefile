@@ -38,13 +38,16 @@ send-request:
 		http://localhost:${PORT}
 
 send-ivcap-request:
-	mkdir -p ./output
+	@mkdir -p ./output
+	$(eval file:=${PROJECT_DIR}/output/$(shell date -Iseconds).png)
 	curl -X POST \
 		-H "Content-Type: application/json" \
 		-H "Authorization: Bearer $(shell ivcap context get access-token)" \
 		-d @sample_request.json \
-		-i \
+		-o ${file} \
+		-w '\nStatus: %{response_code}\n%{header_json}\n' \
 		http://localhost:8088/1/services/${SERVICE_ID}/jobs
+	echo "result stored in ${file}"
 
 
 docker-build:
@@ -82,7 +85,6 @@ PUSH_FROM := ""
 docker-publish:
 	@echo "Publishing docker image '${DOCKER_TAG}'"
 	docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
-	sleep 1
 	$(eval size:=$(shell docker inspect ${DOCKER_TAG} --format='{{.Size}}' | tr -cd '0-9'))
 	$(eval imageSize:=$(shell expr ${size} + 0 ))
 	@echo "... imageSize is ${imageSize}"
@@ -112,7 +114,11 @@ docker-publish-common:
 
 service-register: # docker-publish
 	$(eval image:=$(shell ivcap package list ${DOCKER_TAG}))
+	@if [ "${image}" == "" ]; then \
+		echo "cannot obtain docker package reference"; \
+		exit 1; \
+	fi
 	cat ${PROJECT_DIR}/service.json \
 	| sed 's|#PACKAGE_URN#|${image}|' \
 	| sed 's|#SERVICE_URN#|${SERVICE_URN}|' \
-	| ivcap aspect update ${SERVICE_URN} -f - --timeout 600
+	| ivcap --context local-api aspect update ${SERVICE_URN} -f - --timeout 600
