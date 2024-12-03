@@ -217,7 +217,7 @@ func main() {
 		printAdjacencyHashValues()
 	}
 
-	fmt.Printf("INFO:\tListening on port '%d'\n", *port)
+	fmt.Printf("INFO:\tListening on port %d\n", *port)
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/_healtz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

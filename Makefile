@@ -19,7 +19,7 @@ DOCKER_TAG_LOCAL=${DOCKER_NAME}:latest
 
 PROJECT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 TARGET_PLATFORM := linux/amd64
-
+PORT = 8088
 run:
 	mkdir -p ./output
 	go run main.go --run-once
@@ -31,11 +31,16 @@ serve:
 	go run main.go --port ${PORT}
 
 send-request:
-	mkdir -p ./output
-	curl -X POST -H "Content-Type: application/json" \
+	@mkdir -p ./output
+	$(eval file:=${PROJECT_DIR}/output/$(shell date -Iseconds).png)
+	@curl -X POST \
+		-H "Content-Type: application/json" \
 		-d @sample_request.json \
-		--output ./output/$(shell date -Iseconds).png \
-		http://localhost:${PORT}
+		-o ${file} \
+		--silent \
+		-w '\nStatus: %{response_code}\n%{header_json}\n' \
+		http://localhost:8088
+	@echo "result stored in ${file}"
 
 send-ivcap-request:
 	@mkdir -p ./output
@@ -47,7 +52,7 @@ send-ivcap-request:
 		-o ${file} \
 		-w '\nStatus: %{response_code}\n%{header_json}\n' \
 		http://localhost:8088/1/services/${SERVICE_ID}/jobs
-	echo "result stored in ${file}"
+	@echo "result stored in ${file}"
 
 
 docker-build:
@@ -61,7 +66,7 @@ docker-build:
 	@echo "\nFinished building docker image ${DOCKER_NAME}\n"
 
 docker-run:
-	mkdir -p ./output
+	@mkdir -p ./output
 	docker run -it --rm \
 		-v./output:/output \
 		--user ${DOCKER_USER} \
@@ -70,19 +75,16 @@ docker-run:
 		/app/main --run-once
 
 docker-serve:
-	mkdir -p ./output
 	docker run -it --rm \
-		-v./output:/output \
 		-p${PORT}:${PORT} \
-		${DOCKER_TAG} \
+		--platform=${TARGET_PLATFORM} \
+		${DOCKER_TAG_LOCAL} \
 		/app/main --port ${PORT}
 
 SERVICE_IMG := ${DOCKER_DEPLOY}
 PUSH_FROM := ""
 
-# docker-publish: docker-build
-
-docker-publish:
+docker-publish: docker-build
 	@echo "Publishing docker image '${DOCKER_TAG}'"
 	docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
 	$(eval size:=$(shell docker inspect ${DOCKER_TAG} --format='{{.Size}}' | tr -cd '0-9'))

@@ -17,7 +17,6 @@
     "ready_path": "/_healtz",
     "request": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:sd.test:schema.railroad-collapse.request.1",
       "properties": {
         "width": {
           "default": 8,
