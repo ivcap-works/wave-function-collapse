@@ -1,3 +1,5 @@
+// Started with editing https://github.com/zfedoran/go-wfc/blob/main/examples/islands/main.go (MIT License)
+
 package main
 
 import (
