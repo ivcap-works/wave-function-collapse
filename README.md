@@ -25,10 +25,10 @@ INFO:   Image saved to: ./output/1733191573560971000.png
 ## Quick Explanation
 
 In its simplest form, the _Wave Function Collapse_ algorithm tries to find a layout of $w x h$ cards
-where adjacent tiles "match" up exactly on all sides. Matching is this implementation means that we
-first calculate a _matching hash_ for each side of a tile and define that two tiles can be placed beside each other if the matching hash of the two touching sides is the same.
+where adjacent tiles "match" up exactly on all sides. Matching in this implementation means that we
+first calculate a _matching hash_ for each side of a tile and "declare" that two tiles can only be placed beside each other if the matching hashes of the two touching sides are identical.
 
-For our toy example, we pick three evenly spaced point on each side, take the respective RGB color
+For our toy example, we pick three evenly spaced point on each side, take their respective RGB color
 and hash them together into a single `ConstrainId` as shown below:
 
 ![side-hash](./docs/side-hash.png)
